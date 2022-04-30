@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model doggie {
+  id                 Int                  @id @default(autoincrement())
+  name               String               @db.VarChar(45)
+  age                Decimal
+  breed              String               @db.VarChar(100)
+  interests          String               @db.VarChar(200)
+  number_of_child    Int
+  owner_id           Int
+  city               String               @db.VarChar(45)
+  country            String               @db.VarChar(45)
+  photo              Bytes?               @db.Blob
+  owner              owner                @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_doggies_owner")
+  doggie_has_walking doggie_has_walking[]
+
+  @@index([owner_id], map: "fk_doggies_owner_idx")
+}
+
+model doggie_has_walking {
+  doggie_id  Int
+  walking_id Int
+  doggie     doggie  @relation(fields: [doggie_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_doggies_has_table1_doggies1")
+  walking    walking @relation(fields: [walking_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_doggies_has_table1_table11")
+
+  @@id([doggie_id, walking_id])
+  @@index([doggie_id], map: "fk_doggies_has_table1_doggies1_idx")
+  @@index([walking_id], map: "fk_doggies_has_table1_table11_idx")
+}
+
+model owner {
+  id           Int       @id @default(autoincrement())
+  name         String    @db.VarChar(45)
+  lastname     String    @db.VarChar(45)
+  email        String    @unique(map: "email") @db.VarChar(120)
+  phone        Int
+  interests    String    @db.VarChar(150)
+  neighborhood String    @db.VarChar(45)
+  city         String    @db.VarChar(45)
+  country      String    @db.VarChar(45)
+  photo        Bytes?    @db.TinyBlob
+  doggie       doggie[]
+  walking      walking[]
+}
+
+model walker {
+  id             Int       @id @default(autoincrement())
+  name           String    @db.VarChar(45)
+  lastname       String    @db.VarChar(45)
+  email          String    @unique(map: "email") @db.VarChar(120)
+  phone          Int
+  about_me       String    @db.VarChar(150)
+  price_per_walk String    @db.VarChar(7)
+  city           String    @db.VarChar(45)
+  country        String    @db.VarChar(45)
+  photo          Bytes?    @db.Blob
+  walking        walking[]
+}
+
+model walking {
+  id                 Int                  @id @default(autoincrement())
+  owner_id           Int
+  walker_id          Int
+  price_walking      String               @db.VarChar(7)
+  duration           DateTime             @db.Time(0)
+  date_stamp         DateTime             @db.DateTime(0)
+  owner              owner                @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_table1_owner1")
+  walker             walker               @relation(fields: [walker_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_table1_walker1")
+  doggie_has_walking doggie_has_walking[]
+
+  @@index([owner_id], map: "fk_table1_owner1_idx")
+  @@index([walker_id], map: "fk_table1_walker1_idx")
+}
